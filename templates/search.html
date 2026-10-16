@@ -11,10 +11,6 @@
       <h1>Find Your Perfect Match</h1>
       <p>Filter registered members by community, location and education. Results come live from the database, not static cards.</p>
     </div>
-    <div class="page-band-stats">
-      <div class="band-stat"><strong>{{ total }}</strong><span>{{ 'matches' if searched else 'profiles' }}</span></div>
-      <div class="band-stat"><strong>{{ pages }}</strong><span>{{ 'page' if pages == 1 else 'pages' }}</span></div>
-    </div>
   </div>
 </section>
 <section class="search-body">
@@ -80,7 +76,6 @@
           <h2 class="results-title">{{ total }} profile{{ '' if total == 1 else 's' }}{{ ' found' if searched else ' available' }}</h2>
           <p class="results-sub">{{ 'Matching your selected filters' if searched else 'Latest registered members on Shaadi.com' }}</p>
         </div>
-        <span class="results-page">Page {{ page }} of {{ pages or 1 }}</span>
       </div>
       {% if profiles %}
         <div class="pcard-grid">

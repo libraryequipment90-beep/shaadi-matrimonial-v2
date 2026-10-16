@@ -34,6 +34,7 @@
         <h2>{{ person.full_name }}{% if member.is_demo %}<span class="badge">Demo</span>{% endif %}</h2>
         <p>{{ person.age }} yrs · {{ person.gender }} · {{ person.religion }} · {{ person.city }}</p>
         <div class="kv">
+          <b>Mobile</b><span>{{ person.mobile or 'Not added.' }}</span>
           <b>Gotra</b><span>{{ person.gotra or 'Not added.' }}</span>
           <b>Manglik</b><span>{{ person.manglik or 'Not added.' }}</span>
           <b>Education</b><span>{{ person.education }}</span>

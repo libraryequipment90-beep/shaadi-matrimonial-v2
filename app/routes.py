@@ -293,6 +293,7 @@ def register_routes(app):
             profile = Profile(
                 user_id=user.id,
                 full_name=form.full_name.data.strip(),
+                mobile=(form.mobile.data or "").strip(),
                 gender=form.gender.data,
                 date_of_birth=form.date_of_birth.data,
                 religion=form.religion.data,
@@ -381,6 +382,7 @@ def register_routes(app):
         form = ProfileForm(obj=me)
         if form.validate_on_submit():
             me.full_name = form.full_name.data.strip()
+            me.mobile = (form.mobile.data or "").strip()
             me.gender = form.gender.data
             me.date_of_birth = form.date_of_birth.data
             me.religion = form.religion.data

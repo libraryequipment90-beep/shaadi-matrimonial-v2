@@ -48,6 +48,7 @@ class Profile(db.Model):
         index=True,
     )
     full_name = db.Column(db.String(120), nullable=False)
+    mobile = db.Column(db.String(20), default="")
     gender = db.Column(db.String(20), nullable=False, index=True)
     date_of_birth = db.Column(db.Date, nullable=False)
     religion = db.Column(db.String(40), nullable=False, index=True)
@@ -92,6 +93,7 @@ class Profile(db.Model):
             self.education,
             self.profession,
             self.work,
+            self.mobile,
             self.gotra,
             self.manglik,
             self.family_background,

@@ -18,6 +18,7 @@
       <form class="form-stack" method="post">
         {{ form.hidden_tag() }}
         <div>{{ form.full_name.label }}{{ form.full_name }}{% for error in form.full_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
+        <div>{{ form.mobile.label }}{{ form.mobile(placeholder="10-digit mobile number") }}{% for error in form.mobile.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
         <div>{{ form.gender.label }}{{ form.gender }}</div>
         <div>{{ form.date_of_birth.label }}{{ form.date_of_birth }}{% for error in form.date_of_birth.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
         <div>{{ form.religion.label }}{{ form.religion }}</div>

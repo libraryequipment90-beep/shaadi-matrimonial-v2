@@ -21,10 +21,56 @@
   </div>
 </section>
 <section>
-  <div class="wrap content-card">
-    <h2>Choose a plan that fits your journey</h2>
-    <p>Plans shown here are sample UI content only. Connect a payment provider to make subscriptions functional. Registration itself is free and already working.</p>
-    <a class="btn primary" href="{{ url_for('register') }}">Get Started</a>
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">MEMBERSHIP PLANS</div>
+        <h2>Choose a plan that fits your journey</h2>
+        <p>Simple, transparent pricing. Plans shown here are sample UI only - payments are not connected in this project.</p>
+      </div>
+    </div>
+    <div class="plans">
+      <article class="plan">
+        <h3 class="plan-name">Monthly</h3>
+        <div class="plan-price"><span class="plan-cur">₹</span>200<span class="plan-per">/month</span></div>
+        <p class="plan-tag">Try premium for a month</p>
+        <ul class="plan-list">
+          <li>Unlimited profile views</li>
+          <li>Send interests and messages</li>
+          <li>Priority search placement</li>
+          <li>See who shortlisted you</li>
+        </ul>
+        <a class="btn plan-cta" href="{{ url_for('register') }}">Choose Monthly</a>
+      </article>
+
+      <article class="plan plan-featured">
+        <span class="plan-badge">Most popular</span>
+        <h3 class="plan-name">Half Yearly</h3>
+        <div class="plan-price"><span class="plan-cur">₹</span>500<span class="plan-per">/6 months</span></div>
+        <p class="plan-tag">Save ₹700 vs monthly</p>
+        <ul class="plan-list">
+          <li>Everything in Monthly</li>
+          <li>Verified contact badges</li>
+          <li>Advanced community filters</li>
+          <li>Priority customer support</li>
+        </ul>
+        <a class="btn primary plan-cta" href="{{ url_for('register') }}">Choose Half Yearly</a>
+      </article>
+
+      <article class="plan">
+        <h3 class="plan-name">Yearly</h3>
+        <div class="plan-price"><span class="plan-cur">₹</span>1000<span class="plan-per">/1 year</span></div>
+        <p class="plan-tag">Best value for serious seekers</p>
+        <ul class="plan-list">
+          <li>Everything in Half Yearly</li>
+          <li>12 months of full access</li>
+          <li>Profile boost highlights</li>
+          <li>Dedicated match assistance</li>
+        </ul>
+        <a class="btn plan-cta" href="{{ url_for('register') }}">Choose Yearly</a>
+      </article>
+    </div>
+    <p class="plans-note">Payments are not connected in this study project. These plans are sample content and do not charge you. Registration itself is free and already working.</p>
   </div>
 </section>
 {% endblock %}

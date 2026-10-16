@@ -80,6 +80,21 @@ def validate_single_photo(form, field):
         raise ValidationError("Photo must be a single http(s) image URL.")
 
 
+def validate_mobile(form, field):
+    value = (field.data or "").strip()
+    if not value:
+        return
+    cleaned = value.replace(" ", "").replace("-", "")
+    if cleaned.startswith("+91"):
+        cleaned = cleaned[3:]
+    elif cleaned.startswith("91") and len(cleaned) == 12:
+        cleaned = cleaned[2:]
+    if not (cleaned.isdigit() and len(cleaned) == 10 and cleaned[0] in "6789"):
+        raise ValidationError(
+            "Enter a valid 10-digit mobile number (e.g. 9876543210)."
+        )
+
+
 def validate_adult(form, field):
     if not field.data:
         raise ValidationError("Date of birth is required.")
@@ -103,6 +118,7 @@ class RegisterForm(FlaskForm):
         "Create password",
         validators=[DataRequired(), Length(min=8, max=128, message="Password must be at least 8 characters.")],
     )
+    mobile = StringField("Mobile number", validators=[Optional(), Length(max=20), validate_mobile])
     gender = SelectField("Gender", choices=GENDERS, validators=[DataRequired()])
     date_of_birth = DateField("Date of birth", validators=[DataRequired(), validate_adult])
     religion = SelectField("Religion", choices=RELIGIONS, validators=[DataRequired()])
@@ -171,6 +187,7 @@ class SearchForm(FlaskForm):
 
 class ProfileForm(FlaskForm):
     full_name = StringField("Full name", validators=[DataRequired(), Length(min=2, max=120)])
+    mobile = StringField("Mobile number", validators=[Optional(), Length(max=20), validate_mobile])
     gender = SelectField("Gender", choices=GENDERS, validators=[DataRequired()])
     date_of_birth = DateField("Date of birth", validators=[DataRequired(), validate_adult])
     religion = SelectField("Religion", choices=RELIGIONS, validators=[DataRequired()])

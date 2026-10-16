@@ -9,6 +9,7 @@ DEMO_USERS = [
     {
         "email": "priya.sharma.demo@example.com",
         "full_name": "Priya Sharma",
+        "mobile": "9000000001",
         "gender": "Female",
         "date_of_birth": date(1998, 3, 14),
         "religion": "Hindu",
@@ -34,6 +35,7 @@ DEMO_USERS = [
     {
         "email": "rohit.verma.demo@example.com",
         "full_name": "Rohit Verma",
+        "mobile": "9000000002",
         "gender": "Male",
         "date_of_birth": date(1996, 7, 21),
         "religion": "Hindu",
@@ -59,6 +61,7 @@ DEMO_USERS = [
     {
         "email": "sneha.patel.demo@example.com",
         "full_name": "Sneha Patel",
+        "mobile": "9000000003",
         "gender": "Female",
         "date_of_birth": date(2000, 1, 9),
         "religion": "Hindu",
@@ -84,6 +87,7 @@ DEMO_USERS = [
     {
         "email": "amit.singh.demo@example.com",
         "full_name": "Amit Singh",
+        "mobile": "9000000004",
         "gender": "Male",
         "date_of_birth": date(1994, 11, 2),
         "religion": "Hindu",
@@ -109,6 +113,7 @@ DEMO_USERS = [
     {
         "email": "ananya.gupta.demo@example.com",
         "full_name": "Ananya Gupta",
+        "mobile": "9000000005",
         "gender": "Female",
         "date_of_birth": date(1999, 5, 18),
         "religion": "Hindu",
@@ -134,6 +139,7 @@ DEMO_USERS = [
     {
         "email": "kabir.khan.demo@example.com",
         "full_name": "Kabir Khan",
+        "mobile": "9000000006",
         "gender": "Male",
         "date_of_birth": date(1995, 8, 30),
         "religion": "Muslim",
@@ -159,6 +165,7 @@ DEMO_USERS = [
     {
         "email": "meera.kapoor.demo@example.com",
         "full_name": "Meera Kapoor",
+        "mobile": "9000000007",
         "gender": "Female",
         "date_of_birth": date(1997, 4, 6),
         "religion": "Sikh",
@@ -184,6 +191,7 @@ DEMO_USERS = [
     {
         "email": "arjun.mehta.demo@example.com",
         "full_name": "Arjun Mehta",
+        "mobile": "9000000008",
         "gender": "Male",
         "date_of_birth": date(1993, 12, 12),
         "religion": "Hindu",

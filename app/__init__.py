@@ -120,6 +120,7 @@ def _add_missing_profile_columns():
         return
     existing = {col["name"] for col in inspector.get_columns("profiles")}
     ddl_types = {
+        "mobile": "VARCHAR(20)",
         "work": "VARCHAR(160)",
         "gotra": "VARCHAR(80)",
         "manglik": "VARCHAR(20)",

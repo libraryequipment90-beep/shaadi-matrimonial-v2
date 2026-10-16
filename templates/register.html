@@ -30,6 +30,11 @@
           {% for error in form.date_of_birth.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
         <div>
+          {{ form.mobile.label }}
+          {{ form.mobile(placeholder="10-digit mobile number") }}
+          {% for error in form.mobile.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div>
           {{ form.email.label }}
           {{ form.email(placeholder="you@example.com") }}
           {% for error in form.email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}

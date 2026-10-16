@@ -24,6 +24,7 @@
            <a class="btn" href="{{ url_for('member_detail', user_id=current_user.id) }}">Public view</a></p>
         <div class="kv">
           <b>Email</b><span>{{ current_user.email }}</span>
+          <b>Mobile</b><span>{{ profile.mobile or 'Not added yet.' }}</span>
           <b>Gotra</b><span>{{ profile.gotra or 'Not added yet.' }}</span>
           <b>Manglik</b><span>{{ profile.manglik or 'Not added yet.' }}</span>
           <b>Education</b><span>{{ profile.education }}</span>
