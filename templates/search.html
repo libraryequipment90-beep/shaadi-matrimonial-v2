@@ -4,88 +4,99 @@
 {% block description %}Search registered matrimonial profiles by looking for, age range, religion, gotra, manglik, city, district and education. Results come from real database members.{% endblock %}
 {% block keywords %}matrimonial search, find bride, find groom, partner search, profile search by city religion age{% endblock %}
 {% block content %}
-<section class="page-hero">
-  <div class="wrap">
-    <div class="eyebrow">YOUR JOURNEY STARTS HERE</div>
-    <h1>Find Your Perfect Match</h1>
-    <p>Search registered members using gender, age, religion, city, and education. Results come from the database, not static cards.</p>
+<section class="page-band">
+  <div class="wrap page-band-inner">
+    <div>
+      <div class="eyebrow">YOUR JOURNEY STARTS HERE</div>
+      <h1>Find Your Perfect Match</h1>
+      <p>Filter registered members by community, location and education. Results come live from the database, not static cards.</p>
+    </div>
+    <div class="page-band-stats">
+      <div class="band-stat"><strong>{{ total }}</strong><span>{{ 'matches' if searched else 'profiles' }}</span></div>
+      <div class="band-stat"><strong>{{ pages }}</strong><span>{{ 'page' if pages == 1 else 'pages' }}</span></div>
+    </div>
   </div>
 </section>
-<section>
-  <div class="wrap content-grid">
-    <div class="content-card">
-      <h2>Partner Preferences</h2>
-      <form class="form-stack" method="post">
+<section class="search-body">
+  <div class="wrap search-shell">
+    <aside class="filter-rail">
+      <form method="post" class="filter-form">
         {{ form.hidden_tag() }}
-        <div>
-          {{ form.looking_for.label }}
-          {{ form.looking_for }}
+        <div class="rail-head">
+          <h2>Filters</h2>
+          <a class="rail-reset" href="{{ url_for('search') }}">Reset</a>
         </div>
-        <div>
-          {{ form.min_age.label }}
-          {{ form.min_age(placeholder="18") }}
+
+        <div class="fgroup">
+          <span class="fgroup-title">Looking for</span>
+          <div class="sfield">{{ form.looking_for }}</div>
+        </div>
+
+        <div class="fgroup">
+          <span class="fgroup-title">Age range</span>
+          <div class="frow">
+            <div class="sfield">{{ form.min_age.label }}{{ form.min_age(placeholder="18") }}</div>
+            <div class="sfield">{{ form.max_age.label }}{{ form.max_age(placeholder="40") }}</div>
+          </div>
           {% for error in form.min_age.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-        <div>
-          {{ form.max_age.label }}
-          {{ form.max_age(placeholder="40") }}
           {% for error in form.max_age.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
-        <div>
-          {{ form.religion.label }}
-          {{ form.religion }}
+
+        <div class="fgroup">
+          <span class="fgroup-title">Community</span>
+          <div class="sfield">{{ form.religion.label }}{{ form.religion }}</div>
+          <div class="sfield">{{ form.gotra.label }}{{ form.gotra(placeholder="e.g. Kashyap") }}
+            {% for error in form.gotra.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="sfield">{{ form.manglik.label }}{{ form.manglik }}</div>
         </div>
-        <div>
-          {{ form.gotra.label }}
-          {{ form.gotra(placeholder="e.g. Kashyap") }}
-          {% for error in form.gotra.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+        <div class="fgroup">
+          <span class="fgroup-title">Location</span>
+          <div class="sfield">{{ form.city.label }}{{ form.city(placeholder="e.g. Delhi, Mumbai", list="cities") }}
+            <datalist id="cities">{% for city in cities %}<option>{{ city }}</option>{% endfor %}</datalist>
+          </div>
+          <div class="sfield">{{ form.district.label }}{{ form.district(placeholder="e.g. Sonipat") }}
+            {% for error in form.district.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
         </div>
-        <div>
-          {{ form.manglik.label }}
-          {{ form.manglik }}
+
+        <div class="fgroup">
+          <span class="fgroup-title">Education</span>
+          <div class="sfield">{{ form.education }}</div>
         </div>
-        <div>
-          {{ form.city.label }}
-          {{ form.city(placeholder="e.g. Delhi, Mumbai, Jaipur", list="cities") }}
-          <datalist id="cities">{% for city in cities %}<option>{{ city }}</option>{% endfor %}</datalist>
-        </div>
-        <div>
-          {{ form.district.label }}
-          {{ form.district(placeholder="e.g. Sonipat") }}
-          {% for error in form.district.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-        <div>
-          {{ form.education.label }}
-          {{ form.education }}
-        </div>
-        <button class="btn primary" type="submit">Search Profiles</button>
+
+        <button class="btn primary rail-submit" type="submit">Search Profiles</button>
       </form>
-    </div>
-    <div class="content-card">
-      <h2>Tips for better matches</h2>
-      <p>Keep your profile information complete and up to date.</p>
-      <p>Add a clear photo URL on Edit Profile if you want a picture to appear.</p>
-      <p>Choose preferences that matter most, while staying open to compatible matches.</p>
-      <p>Emails and passwords are never shown in search results.</p>
-      <div class="notice">Your own profile is excluded from search when you are logged in. Hidden profiles stay private.</div>
-    </div>
-  </div>
-  <div class="wrap" style="margin-top:24px">
-    {% if searched %}
-      <h2>{{ total }} profile{{ '' if total == 1 else 's' }} found</h2>
-    {% else %}
-      <h2>Latest public profiles</h2>
-    {% endif %}
-    {% if profiles %}
-      <div class="profiles" style="margin-top:16px">
-        {% for person in profiles %}
-          {{ profile_card(person, fav_ids) }}
-        {% endfor %}
+      <div class="rail-note">
+        <b>Good to know</b>
+        <p>Your own profile stays hidden from results. Emails and passwords are never shown. Add a clear photo URL from Edit Profile.</p>
       </div>
-      {{ pager(page, pages, 'search') }}
-    {% else %}
-      <p class="empty">No profiles match these filters. Try a wider age range or leave city blank.</p>
-    {% endif %}
+    </aside>
+
+    <div class="results-area">
+      <div class="results-head">
+        <div>
+          <h2 class="results-title">{{ total }} profile{{ '' if total == 1 else 's' }}{{ ' found' if searched else ' available' }}</h2>
+          <p class="results-sub">{{ 'Matching your selected filters' if searched else 'Latest registered members on Shaadi.com' }}</p>
+        </div>
+        <span class="results-page">Page {{ page }} of {{ pages or 1 }}</span>
+      </div>
+      {% if profiles %}
+        <div class="pcard-grid">
+          {% for person in profiles %}
+            {{ profile_card(person, fav_ids) }}
+          {% endfor %}
+        </div>
+        {{ pager(page, pages, 'search') }}
+      {% else %}
+        <div class="empty">
+          <b>No profiles match these filters.</b>
+          <p>Try a wider age range, clear the gotra field, or leave city blank.</p>
+          <a class="btn" href="{{ url_for('search') }}">Reset filters</a>
+        </div>
+      {% endif %}
+    </div>
   </div>
 </section>
 {% endblock %}

@@ -43,30 +43,38 @@
   {% block structured_data %}{% endblock %}
 </head>
 <body>
-<header class="topbar">
-  <a class="logo" href="{{ url_for('home') }}">shaadi<small>.com</small></a>
-  <nav class="nav">
-    <a class="{{ 'active' if active=='home' else '' }}" href="{{ url_for('home') }}">Home</a>
-    <a class="{{ 'active' if active=='search' else '' }}" href="{{ url_for('search') }}">Search</a>
-    <a class="{{ 'active' if active=='stories' else '' }}" href="{{ url_for('stories') }}">Success Stories</a>
-    <a class="{{ 'active' if active=='services' else '' }}" href="{{ url_for('services') }}">Services</a>
-    <a class="{{ 'active' if active=='community' else '' }}" href="{{ url_for('community') }}">Community</a>
-    <a class="{{ 'active' if active=='help' else '' }}" href="{{ url_for('help') }}">Help</a>
-    {% if current_user.is_authenticated %}
-    <a class="{{ 'active' if active=='connections' else '' }}" href="{{ url_for('connections') }}">Connections</a>
-    {% endif %}
-  </nav>
-  <div class="actions">
-    {% if current_user.is_authenticated %}
-      <a class="btn {{ 'primary' if active=='profile' else '' }}" href="{{ url_for('profile') }}">My Profile</a>
-      <form class="logout-form" method="post" action="{{ url_for('logout') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn" type="submit">Logout</button>
-      </form>
-    {% else %}
-      <a class="btn" href="{{ url_for('login') }}">Login</a>
-      <a class="btn primary" href="{{ url_for('register') }}">Register Free</a>
-    {% endif %}
+<header class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="{{ url_for('home') }}">
+      <span class="brand-mark">S</span>
+      <span class="brand-text">shaadi<small>.com</small></span>
+    </a>
+    <nav class="pillnav">
+      <a class="{{ 'active' if active=='home' else '' }}" href="{{ url_for('home') }}">Home</a>
+      <a class="{{ 'active' if active=='search' else '' }}" href="{{ url_for('search') }}">Search</a>
+      <a class="{{ 'active' if active=='stories' else '' }}" href="{{ url_for('stories') }}">Success Stories</a>
+      <a class="{{ 'active' if active=='services' else '' }}" href="{{ url_for('services') }}">Services</a>
+      <a class="{{ 'active' if active=='community' else '' }}" href="{{ url_for('community') }}">Community</a>
+      <a class="{{ 'active' if active=='help' else '' }}" href="{{ url_for('help') }}">Help</a>
+      {% if current_user.is_authenticated %}
+      <a class="{{ 'active' if active=='connections' else '' }}" href="{{ url_for('connections') }}">Connections</a>
+      {% endif %}
+    </nav>
+    <div class="navbar-actions">
+      {% if current_user.is_authenticated %}
+        <a class="profile-chip {{ 'active' if active=='profile' else '' }}" href="{{ url_for('profile') }}">
+          <span class="chip-avatar">{{ current_user.profile.full_name[0]|upper if current_user.profile and current_user.profile.full_name else 'U' }}</span>
+          <span class="chip-label">My Profile</span>
+        </a>
+        <form class="logout-form" method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn-outline" type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a class="btn-ghost" href="{{ url_for('login') }}">Login</a>
+        <a class="btn-grad" href="{{ url_for('register') }}">Register Free</a>
+      {% endif %}
+    </div>
   </div>
 </header>
 

@@ -14,16 +14,32 @@
 {% endmacro %}
 
 {% macro profile_card(profile, fav_ids) %}
-<div class="profile">
-  <a href="{{ url_for('member_detail', user_id=profile.user_id) }}"><img class="avatar" src="{{ photo_url(profile) }}" alt=""></a>
-  <div>
-    <b><a class="name" href="{{ url_for('member_detail', user_id=profile.user_id) }}">{{ profile.full_name }}</a>{% if profile.user and profile.user.is_demo %}<span class="badge">Demo</span>{% endif %}</b>
-    <small>{{ profile.age }} yrs | {{ profile.religion }} | {{ profile.city }}</small>
-    <small style="margin-top:5px">{{ profile.education }} · {{ profile.profession }}</small>
-    <small style="margin-top:5px">Gotra: {{ profile.gotra or '—' }} | Manglik: {{ profile.manglik or '—' }}</small>
+<article class="pcard">
+  <div class="pcard-media">
+    <a class="pcard-link" href="{{ url_for('member_detail', user_id=profile.user_id) }}" aria-label="View profile of {{ profile.full_name }}">
+      <img src="{{ photo_url(profile) }}" alt="{{ profile.full_name }}" loading="lazy">
+    </a>
+    {% if profile.user and profile.user.is_demo %}<span class="pcard-flag">Demo</span>{% endif %}
+    <div class="pcard-fav">{{ heart_form(profile.user_id, profile.user_id in fav_ids) }}</div>
   </div>
-  {{ heart_form(profile.user_id, profile.user_id in fav_ids) }}
-</div>
+  <div class="pcard-body">
+    <div class="pcard-top">
+      <h3 class="pcard-name"><a href="{{ url_for('member_detail', user_id=profile.user_id) }}">{{ profile.full_name }}</a></h3>
+      <span class="pcard-age">{{ profile.age }} yrs</span>
+    </div>
+    <p class="pcard-sub">
+      <span class="pcard-sub-item">{{ profile.profession or '—' }}</span>
+      <span class="pcard-dot">·</span>
+      <span class="pcard-sub-item">{{ profile.education or '—' }}</span>
+    </p>
+    <div class="pcard-chips">
+      <span class="chip chip-loc">{{ profile.city }}</span>
+      <span class="chip">{{ profile.religion }}</span>
+      {% if profile.gotra %}<span class="chip">Gotra: {{ profile.gotra }}</span>{% endif %}
+      {% if profile.manglik %}<span class="chip chip-soft">Manglik: {{ profile.manglik }}</span>{% endif %}
+    </div>
+  </div>
+</article>
 {% endmacro %}
 
 {% macro pager(page, pages, endpoint) %}
