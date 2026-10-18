@@ -19,50 +19,143 @@
   </script>
 {% endblock %}
 {% block content %}
-<section class="page-hero">
+<section class="mp-wrap">
   <div class="wrap">
-    <div class="eyebrow">MEMBER PROFILE</div>
-    <h1>{{ person.full_name }}</h1>
-    <p>Public profile details. Email, password, and other private account data are never shown here.</p>
-  </div>
-</section>
-<section>
-  <div class="wrap content-card">
-    <div class="detail">
-      <img src="{{ photo_url(person) }}" alt="">
-      <div>
-        <h2>{{ person.full_name }}{% if member.is_demo %}<span class="badge">Demo</span>{% endif %}</h2>
-        <p>{{ person.age }} yrs · {{ person.gender }} · {{ person.religion }} · {{ person.city }}</p>
-        <div class="kv">
-          <b>Mobile</b><span>{{ person.mobile or 'Not added.' }}</span>
-          <b>Gotra</b><span>{{ person.gotra or 'Not added.' }}</span>
-          <b>Manglik</b><span>{{ person.manglik or 'Not added.' }}</span>
-          <b>Education</b><span>{{ person.education }}</span>
-          <b>Occupation</b><span>{{ person.profession }}</span>
-          <b>Work</b><span>{{ person.work or 'Not added.' }}</span>
-          <b>Father's name</b><span>{{ person.father_name or 'Not added.' }}</span>
-          <b>Father's occupation</b><span>{{ person.father_occupation or 'Not added.' }}</span>
-          <b>Mother's name</b><span>{{ person.mother_name or 'Not added.' }}</span>
-          <b>Mother's occupation</b><span>{{ person.mother_occupation or 'Not added.' }}</span>
-          <b>Brothers / Sisters</b><span>{{ person.brothers or 0 }} brother(s), {{ person.sisters or 0 }} sister(s)</span>
-          <b>Family village</b><span>{{ person.family_village or 'Not added.' }}</span>
-          <b>District</b><span>{{ person.district or 'Not added.' }}</span>
-          <b>Family background</b><span>{{ person.family_background or 'Not added.' }}</span>
-          <b>Current address</b><span>{{ person.current_address or 'Not added.' }}</span>
-          <b>About</b><span>{{ person.about_me or 'This member has not added a bio yet.' }}</span>
-        </div>
-        {% if is_owner %}
-          <p><a class="btn primary" href="{{ url_for('edit_profile') }}">Edit my profile</a></p>
-        {% elif current_user.is_authenticated %}
-          {{ heart_form(member.id, is_fav) }}
-          <form class="inline-form" method="post" action="{{ url_for('send_interest', user_id=member.id) }}" style="margin-left:12px">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn primary" type="submit">Send interest</button>
-          </form>
-        {% else %}
-          <p><a class="btn primary" href="{{ url_for('login', next=request.path) }}">Login to shortlist</a></p>
-        {% endif %}
+    <nav class="mp-crumbs" aria-label="Breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a>
+      <span>/</span>
+      <a href="{{ url_for('community') }}">Community</a>
+      <span>/</span>
+      <span class="mp-crumb-current">{{ person.full_name }}</span>
+    </nav>
+
+    <div class="mp-head">
+      <div class="mp-photo">
+        <img src="{{ photo_url(person) }}" alt="{{ person.full_name }}">
       </div>
+      <div class="mp-identity">
+        <div class="mp-tagrow">
+          {% if member.is_demo %}<span class="mp-tag">Demo profile</span>{% endif %}
+          {% if person.is_visible %}<span class="mp-tag mp-tag-soft">Active member</span>{% endif %}
+        </div>
+        <h1 class="mp-name">{{ person.full_name }}</h1>
+        <p class="mp-sub">{{ person.age }} yrs <span>·</span> {{ person.gender }} <span>·</span> {{ person.religion }} <span>·</span> {{ person.city }}</p>
+        <div class="mp-chips">
+          <span class="chip chip-loc">{{ person.city }}</span>
+          <span class="chip">{{ person.education }}</span>
+          <span class="chip">{{ person.profession }}</span>
+          {% if person.manglik %}<span class="chip chip-soft">Manglik: {{ person.manglik }}</span>{% endif %}
+        </div>
+        <div class="mp-actions">
+          {% if is_owner %}
+            <a class="btn primary" href="{{ url_for('edit_profile') }}">Edit my profile</a>
+            <a class="btn" href="{{ url_for('profile') }}">Dashboard</a>
+          {% elif current_user.is_authenticated %}
+            <form class="inline-form" method="post" action="{{ url_for('send_interest', user_id=member.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn primary" type="submit">Send interest</button>
+            </form>
+            <span class="mp-heart">{{ heart_form(member.id, is_fav) }}</span>
+          {% else %}
+            <a class="btn primary" href="{{ url_for('login', next=request.path) }}">Login to connect</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="mp-grid">
+      <div class="mp-main">
+        {% if person.about_me %}
+        <section class="mp-card">
+          <h2 class="mp-card-title">About {{ person.full_name.split(' ')[0] }}</h2>
+          <p class="mp-about">{{ person.about_me }}</p>
+        </section>
+        {% endif %}
+
+        <section class="mp-card">
+          <h2 class="mp-card-title">Basic details</h2>
+          <div class="mp-items">
+            <div class="mp-item"><span>Age</span><b>{{ person.age }} years</b></div>
+            <div class="mp-item"><span>Gender</span><b>{{ person.gender }}</b></div>
+            <div class="mp-item"><span>Religion</span><b>{{ person.religion }}</b></div>
+            <div class="mp-item"><span>Education</span><b>{{ person.education }}</b></div>
+            <div class="mp-item"><span>Occupation</span><b>{{ person.profession }}</b></div>
+            <div class="mp-item"><span>Work</span><b>{{ person.work or 'Not added' }}</b></div>
+          </div>
+        </section>
+
+        <section class="mp-card">
+          <h2 class="mp-card-title">Community</h2>
+          <div class="mp-items">
+            <div class="mp-item"><span>Gotra</span><b>{{ person.gotra or 'Not added' }}</b></div>
+            <div class="mp-item"><span>Manglik</span><b>{{ person.manglik or 'Not added' }}</b></div>
+          </div>
+        </section>
+
+        <section class="mp-card">
+          <h2 class="mp-card-title">Family</h2>
+          <div class="mp-items">
+            <div class="mp-item"><span>Father's name</span><b>{{ person.father_name or 'Not added' }}</b></div>
+            <div class="mp-item"><span>Father's occupation</span><b>{{ person.father_occupation or 'Not added' }}</b></div>
+            <div class="mp-item"><span>Mother's name</span><b>{{ person.mother_name or 'Not added' }}</b></div>
+            <div class="mp-item"><span>Mother's occupation</span><b>{{ person.mother_occupation or 'Not added' }}</b></div>
+            <div class="mp-item"><span>Brothers</span><b>{{ person.brothers or 0 }}</b></div>
+            <div class="mp-item"><span>Sisters</span><b>{{ person.sisters or 0 }}</b></div>
+            <div class="mp-item"><span>Native place</span><b>{{ person.family_village or 'Not added' }}</b></div>
+            <div class="mp-item"><span>District</span><b>{{ person.district or 'Not added' }}</b></div>
+          </div>
+          {% if person.family_background %}
+            <div class="mp-note">
+              <span>Family background</span>
+              <p>{{ person.family_background }}</p>
+            </div>
+          {% endif %}
+        </section>
+
+        <section class="mp-card">
+          <h2 class="mp-card-title">Location</h2>
+          <div class="mp-items">
+            <div class="mp-item"><span>City</span><b>{{ person.city }}</b></div>
+            <div class="mp-item"><span>District</span><b>{{ person.district or 'Not added' }}</b></div>
+          </div>
+          {% if person.current_address %}
+            <div class="mp-note">
+              <span>Current address</span>
+              <p>{{ person.current_address }}</p>
+            </div>
+          {% endif %}
+        </section>
+      </div>
+
+      <aside class="mp-side">
+        <section class="mp-card mp-side-card">
+          <h2 class="mp-card-title">At a glance</h2>
+          <ul class="mp-facts">
+            <li><span>Age</span><b>{{ person.age }} yrs</b></li>
+            <li><span>Religion</span><b>{{ person.religion }}</b></li>
+            <li><span>City</span><b>{{ person.city }}</b></li>
+            <li><span>Education</span><b>{{ person.education }}</b></li>
+            <li><span>Profession</span><b>{{ person.profession }}</b></li>
+            <li><span>Manglik</span><b>{{ person.manglik or '—' }}</b></li>
+          </ul>
+        </section>
+
+        <section class="mp-card mp-side-card">
+          <h2 class="mp-card-title">Contact</h2>
+          {% if current_user.is_authenticated %}
+            <div class="mp-contact"><span>Mobile</span><b>{{ person.mobile or 'Not added' }}</b></div>
+          {% else %}
+            <div class="mp-contact"><span>Mobile</span><b>Login to view</b></div>
+            <a class="btn primary mp-contact-cta" href="{{ url_for('login', next=request.path) }}">Login to view</a>
+          {% endif %}
+          <p class="mp-privacy">Email and account details are never shown. Be respectful when you reach out.</p>
+        </section>
+
+        <section class="mp-card mp-side-card mp-side-safety">
+          <h2 class="mp-card-title">Safety first</h2>
+          <p class="mp-privacy">Never share banking details or OTPs. Meet in a public place and involve your family for the first meeting.</p>
+        </section>
+      </aside>
     </div>
   </div>
 </section>
