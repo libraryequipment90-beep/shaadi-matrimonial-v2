@@ -49,7 +49,7 @@
       <span class="brand-mark">S</span>
       <span class="brand-text">shaadi<small>.com</small></span>
     </a>
-    <nav class="pillnav">
+    <nav class="pillnav" id="primary-nav">
       <a class="{{ 'active' if active=='home' else '' }}" href="{{ url_for('home') }}">Home</a>
       <a class="{{ 'active' if active=='search' else '' }}" href="{{ url_for('search') }}">Search</a>
       <a class="{{ 'active' if active=='stories' else '' }}" href="{{ url_for('stories') }}">Success Stories</a>
@@ -84,6 +84,9 @@
         <a class="btn-grad" href="{{ url_for('register') }}">Register Free</a>
       {% endif %}
     </div>
+    <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="primary-nav">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
 
@@ -167,8 +170,31 @@
       document.querySelectorAll("details.user-menu[open]").forEach(function (menu) {
         menu.removeAttribute("open");
       });
+      var nav = document.querySelector(".navbar");
+      if (nav) {
+        nav.classList.remove("menu-open");
+        var btn = nav.querySelector(".nav-toggle");
+        if (btn) { btn.setAttribute("aria-expanded", "false"); }
+      }
     }
   });
+
+  (function () {
+    var nav = document.querySelector(".navbar");
+    var toggle = document.querySelector(".nav-toggle");
+    if (!nav || !toggle) { return; }
+    toggle.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var open = nav.classList.toggle("menu-open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("click", function (event) {
+      if (!nav.contains(event.target)) {
+        nav.classList.remove("menu-open");
+        toggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  })();
 </script>
 </body>
 </html>
