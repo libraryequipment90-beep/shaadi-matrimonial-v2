@@ -1,25 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Success Stories | Shaadi.com Matrimony{% endblock %}
-{% block description %}Browse sample success story cards showing the original Shaadi.com-style layout. These are illustrative sample couples, not verified real testimonials.{% endblock %}
+{% block description %}Browse success story cards showing happy couples who found their match through Shaadi.com.{% endblock %}
 {% block keywords %}success stories, matrimonial stories, happy couples, marriage stories{% endblock %}
 {% block content %}
-<section class="page-hero">
-  <div class="wrap">
-    <div class="eyebrow">POPULAR ON SHAADI</div>
-    <h1>Sample Stories</h1>
-    <p>These cards keep the original Success Stories layout. They are sample content stored in the database, not real testimonials or verified couples.</p>
+<section class="slim-band">
+  <div class="wrap slim-band-inner">
+    <div>
+      <div class="eyebrow">POPULAR ON SHAADI</div>
+      <h1>Success Stories</h1>
+    </div>
   </div>
 </section>
-<section>
+<section class="slim-body">
   <div class="wrap">
-    <div class="cards">
+    <div class="story-grid">
       {% for story in stories %}
-      <article class="card">
-        <img src="{{ story.image_url }}" alt="">
-        <div class="card-body">
+      <article class="story-card">
+        <div class="story-media">
+          <img src="{{ story.image_url }}" alt="{{ story.couple_names }}" loading="lazy">
+        </div>
+        <div class="story-body">
           <h3>{{ story.couple_names }}</h3>
           <p>“{{ story.quote }}”</p>
-          <small>♥ {{ story.city }} · Sample</small>
+          <span class="story-meta">♥ {{ story.city }} · Sample</span>
         </div>
       </article>
       {% endfor %}
