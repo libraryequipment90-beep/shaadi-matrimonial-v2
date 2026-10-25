@@ -1,26 +1,13 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{{ title }} | Shaadi.com</title>
-  <meta name="description" content="{{ message }}">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-<header class="topbar">
-  <a class="logo" href="/">shaadi<small>.com</small></a>
-</header>
-<main>
-  <section class="page-hero">
-    <div class="wrap">
-      <h1>{{ title }}</h1>
-      <p>{{ message }}</p>
-      <p><a class="btn primary" href="/">Back to Home</a></p>
-    </div>
-  </section>
-</main>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}{{ title }} | Shaadi.com{% endblock %}
+{% block description %}{{ message }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="wrap">
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <p><a class="btn primary" href="{{ url_for('home') }}">Back to Home</a></p>
+  </div>
+</section>
+{% endblock %}

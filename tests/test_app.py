@@ -2,7 +2,15 @@ from datetime import date, timedelta
 
 from app import db
 from app.config import TestConfig
-from app.models import ContactMessage, Favourite, Interest, Profile, User, calculate_age
+from app.models import (
+    ContactMessage,
+    Favourite,
+    Interest,
+    Profile,
+    User,
+    calculate_age,
+    date_of_birth_bounds,
+)
 from app.seed import DEMO_PASSWORD, seed_demo_data
 from app import create_app
 
@@ -484,3 +492,89 @@ def test_database_persistence(tmp_path):
         assert found is not None
         assert found.check_password("PersistPass1")
         assert found.profile.city == "Pune"
+
+
+def test_search_invalid_age_does_not_500(client, seeded):
+    assert client.get("/search?min_age=abc").status_code == 200
+    assert client.get("/search?max_age=foo").status_code == 200
+    assert client.get("/search?min_age=18.5").status_code == 200
+    html = client.get("/search?min_age=abc&looking_for=Female").get_data(as_text=True)
+    assert "No profiles match" in html or "profile" in html.lower()
+
+
+def test_login_rejects_open_redirect(client, seeded):
+    response = client.post(
+        "/login",
+        query_string={"next": "////evil.com"},
+        data={"email": "priya.sharma.demo@example.com", "password": DEMO_PASSWORD},
+        follow_redirects=False,
+    )
+    assert response.status_code in (302, 303)
+    location = response.headers.get("Location", "")
+    assert "evil.com" not in location
+    assert location.endswith("/profile") or location.endswith("/")
+
+
+def test_login_keeps_safe_next(client, seeded):
+    response = client.post(
+        "/login",
+        query_string={"next": "/members/2"},
+        data={"email": "priya.sharma.demo@example.com", "password": DEMO_PASSWORD},
+        follow_redirects=False,
+    )
+    assert response.status_code in (302, 303)
+    assert response.headers.get("Location", "").endswith("/members/2")
+
+
+def test_age_bounds_exclude_older_than_max():
+    today = date.today()
+    earliest, latest = date_of_birth_bounds(21, 35)
+    turned_36 = date(today.year - 36, today.month, today.day)
+    turned_35 = date(today.year - 35, today.month, today.day)
+    turned_21 = date(today.year - 21, today.month, today.day)
+    almost_21 = turned_21 + timedelta(days=1)
+    assert calculate_age(turned_36) == 36
+    assert not (earliest <= turned_36 <= latest)
+    assert earliest <= turned_35 <= latest
+    assert earliest <= turned_21 <= latest
+    assert not (earliest <= almost_21 <= latest)
+
+
+def test_mobile_hidden_until_connected(client, app, seeded):
+    with app.app_context():
+        priya = User.query.filter_by(email="priya.sharma.demo@example.com").first()
+        priya_id = priya.id
+        priya_mobile = priya.profile.mobile
+
+    guest = client.get(f"/members/{priya_id}").get_data(as_text=True)
+    assert priya_mobile not in guest
+    assert "Login to view" in guest
+
+    client.post(
+        "/register",
+        data=register_payload(email="viewer@example.com", full_name="Viewer"),
+        follow_redirects=True,
+    )
+    logged_in = client.get(f"/members/{priya_id}").get_data(as_text=True)
+    assert priya_mobile not in logged_in
+    assert "Visible after you connect" in logged_in
+
+    client.post(f"/interest/{priya_id}", follow_redirects=True)
+    with app.app_context():
+        viewer = User.query.filter_by(email="viewer@example.com").first()
+        item = Interest.query.filter_by(sender_id=viewer.id, receiver_id=priya_id).first()
+        item.status = "accepted"
+        db.session.commit()
+
+    connected = client.get(f"/members/{priya_id}").get_data(as_text=True)
+    assert priya_mobile in connected
+
+
+def test_relative_sqlite_url_uses_project_instance(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///instance/shaadi.db")
+    from app.config import _database_uri
+
+    uri = _database_uri()
+    assert uri.startswith("sqlite:///")
+    assert uri.endswith("/instance/shaadi.db")
+    assert "sqlite:////" in uri or uri.count("/") >= 4

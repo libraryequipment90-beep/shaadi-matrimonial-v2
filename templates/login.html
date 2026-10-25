@@ -15,6 +15,7 @@
     <div class="content-card">
       <form class="form-stack" method="post">
         {{ form.hidden_tag() }}
+        {% if next_url|default('') %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
         <div>
           {{ form.email.label }}
           {{ form.email(placeholder="Enter email") }}

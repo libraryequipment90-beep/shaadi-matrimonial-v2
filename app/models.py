@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -216,5 +216,5 @@ def date_of_birth_bounds(min_age, max_age):
             return today.replace(month=2, day=28, year=today.year - years)
 
     latest_dob = shift_years(min_age)
-    earliest_dob = shift_years(max_age + 1)
+    earliest_dob = shift_years(max_age + 1) + timedelta(days=1)
     return earliest_dob, latest_dob

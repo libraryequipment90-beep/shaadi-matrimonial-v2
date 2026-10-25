@@ -7,13 +7,20 @@ load_dotenv()
 
 
 def _database_uri():
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    instance_dir = os.path.join(project_root, "instance")
+    os.makedirs(instance_dir, exist_ok=True)
+
     uri = os.getenv("DATABASE_URL", "").strip()
     if uri:
         if uri.startswith("postgres://"):
             uri = uri.replace("postgres://", "postgresql://", 1)
+        if uri.startswith("sqlite:///"):
+            if uri.startswith("sqlite:////") or uri.startswith("sqlite:///:memory:"):
+                return uri
+            relative = uri[len("sqlite:///"):]
+            return "sqlite:///" + os.path.abspath(os.path.join(project_root, relative))
         return uri
-    instance_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance")
-    os.makedirs(instance_dir, exist_ok=True)
     return "sqlite:///" + os.path.join(instance_dir, "shaadi.db")
 
 

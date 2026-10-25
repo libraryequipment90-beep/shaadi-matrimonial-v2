@@ -51,10 +51,23 @@
             <a class="btn primary" href="{{ url_for('edit_profile') }}">Edit my profile</a>
             <a class="btn" href="{{ url_for('profile') }}">Dashboard</a>
           {% elif current_user.is_authenticated %}
-            <form class="inline-form" method="post" action="{{ url_for('send_interest', user_id=member.id) }}">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn primary" type="submit">Send interest</button>
-            </form>
+            {% if interest_status == 'accepted' %}
+              <a class="btn primary" href="{{ url_for('connections') }}">Connected</a>
+            {% elif incoming_pending %}
+              <a class="btn primary" href="{{ url_for('connections') }}">Respond to interest</a>
+            {% elif interest_status == 'pending' %}
+              <button class="btn" type="button" disabled>Interest sent</button>
+            {% elif interest_status == 'declined' %}
+              <form class="inline-form" method="post" action="{{ url_for('send_interest', user_id=member.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn primary" type="submit">Send interest again</button>
+              </form>
+            {% else %}
+              <form class="inline-form" method="post" action="{{ url_for('send_interest', user_id=member.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn primary" type="submit">Send interest</button>
+              </form>
+            {% endif %}
             <span class="mp-heart">{{ heart_form(member.id, is_fav) }}</span>
           {% else %}
             <a class="btn primary" href="{{ url_for('login', next=request.path) }}">Login to connect</a>
@@ -142,8 +155,11 @@
 
         <section class="mp-card mp-side-card">
           <h2 class="mp-card-title">Contact</h2>
-          {% if current_user.is_authenticated %}
+          {% if can_see_contact %}
             <div class="mp-contact"><span>Mobile</span><b>{{ person.mobile or 'Not added' }}</b></div>
+          {% elif current_user.is_authenticated %}
+            <div class="mp-contact"><span>Mobile</span><b>Visible after you connect</b></div>
+            <p class="mp-privacy">Send interest and wait for acceptance before contact details are shared.</p>
           {% else %}
             <div class="mp-contact"><span>Mobile</span><b>Login to view</b></div>
             <a class="btn primary mp-contact-cta" href="{{ url_for('login', next=request.path) }}">Login to view</a>

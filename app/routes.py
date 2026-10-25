@@ -67,24 +67,46 @@ def register_routes(app):
         manglik=None,
         district=None,
     ):
+        def like_contains(value):
+            escaped = (
+                value.strip()
+                .lower()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+            )
+            return "%" + escaped + "%"
+
         if looking_for and looking_for not in ("Any", "any"):
             query = query.filter(Profile.gender == looking_for)
         if religion and religion not in ("Any", "Any religion", ""):
             query = query.filter(Profile.religion == religion)
-        if gotra:
-            query = query.filter(func.lower(Profile.gotra).like("%" + gotra.strip().lower() + "%"))
+        if gotra and gotra.strip():
+            query = query.filter(
+                func.lower(Profile.gotra).like(like_contains(gotra), escape="\\")
+            )
         if manglik and manglik not in ("Any", ""):
             query = query.filter(Profile.manglik == manglik)
-        if city:
-            query = query.filter(func.lower(Profile.city).like("%" + city.strip().lower() + "%"))
-        if district:
-            query = query.filter(func.lower(Profile.district).like("%" + district.strip().lower() + "%"))
+        if city and city.strip():
+            query = query.filter(
+                func.lower(Profile.city).like(like_contains(city), escape="\\")
+            )
+        if district and district.strip():
+            query = query.filter(
+                func.lower(Profile.district).like(like_contains(district), escape="\\")
+            )
         if education and education not in ("Any", "Any education", ""):
             query = query.filter(Profile.education == education)
         if exclude_id:
             query = query.filter(Profile.user_id != exclude_id)
-        min_age = int(min_age) if min_age else 18
-        max_age = int(max_age) if max_age else 80
+        try:
+            min_age = int(min_age) if min_age not in (None, "") else 18
+        except (TypeError, ValueError):
+            min_age = 18
+        try:
+            max_age = int(max_age) if max_age not in (None, "") else 80
+        except (TypeError, ValueError):
+            max_age = 80
         min_age = max(18, min(80, min_age))
         max_age = max(18, min(80, max_age))
         if min_age > max_age:
@@ -103,12 +125,36 @@ def register_routes(app):
             return digits[0], digits[0]
         return 21, 35
 
-    def safe_next(target):
-        if target:
-            parsed = urlparse(target)
-            if not parsed.netloc and parsed.path.startswith("/"):
-                return target
-        return url_for("home")
+    def parse_int_arg(name, default=None, minimum=None, maximum=None):
+        raw = request.args.get(name)
+        if raw is None or raw == "":
+            return default
+        try:
+            value = int(str(raw).strip())
+        except (TypeError, ValueError):
+            return default
+        if minimum is not None:
+            value = max(minimum, value)
+        if maximum is not None:
+            value = min(maximum, value)
+        return value
+
+    def safe_next(target, fallback=None):
+        fallback = fallback or url_for("home")
+        if not target:
+            return fallback
+        parsed = urlparse(target.strip())
+        if parsed.scheme and parsed.scheme not in ("http", "https"):
+            return fallback
+        if parsed.netloc and parsed.netloc != request.host:
+            return fallback
+        path = parsed.path or ""
+        if not path.startswith("/") or path.startswith("//") or "\\" in path:
+            return fallback
+        if any(ch in path for ch in ("\n", "\r", "\t")):
+            return fallback
+        query = ("?" + parsed.query) if parsed.query else ""
+        return path + query
 
     @app.route("/")
     def home():
@@ -136,16 +182,20 @@ def register_routes(app):
                 form.looking_for.data = "Female"
             elif looking in ("Groom", "Male"):
                 form.looking_for.data = "Male"
-            elif looking == "Any":
+            elif looking in ("Any", "any"):
                 form.looking_for.data = "Any"
-            if request.args.get("min_age"):
-                form.min_age.data = int(request.args.get("min_age"))
-            if request.args.get("max_age"):
-                form.max_age.data = int(request.args.get("max_age"))
+            elif looking:
+                form.looking_for.data = "Any"
+            min_age = parse_int_arg("min_age", minimum=18, maximum=80)
+            max_age = parse_int_arg("max_age", minimum=18, maximum=80)
+            if min_age is not None:
+                form.min_age.data = min_age
+            if max_age is not None:
+                form.max_age.data = max_age
             if request.args.get("age"):
                 low, high = parse_age_range(request.args.get("age"))
-                form.min_age.data = low
-                form.max_age.data = high
+                form.min_age.data = max(18, min(80, low))
+                form.max_age.data = max(18, min(80, high))
             if request.args.get("religion"):
                 form.religion.data = request.args.get("religion")
             if request.args.get("gotra"):
@@ -159,10 +209,22 @@ def register_routes(app):
             if request.args.get("education"):
                 form.education.data = request.args.get("education")
 
-        submitted = request.method == "POST" or any(request.args.get(k) for k in (
-            "looking_for", "seeking", "min_age", "max_age", "age", "religion",
-            "gotra", "manglik", "city", "district", "education",
-        ))
+        looking = request.args.get("looking_for") or request.args.get("seeking")
+        known_looking = looking in ("Bride", "Female", "Groom", "Male", "Any", "any")
+        submitted = request.method == "POST" or known_looking or any(
+            request.args.get(k)
+            for k in (
+                "min_age",
+                "max_age",
+                "age",
+                "religion",
+                "gotra",
+                "manglik",
+                "city",
+                "district",
+                "education",
+            )
+        )
         if request.method == "POST" and not form.validate():
             return render_template(
                 "search.html",
@@ -333,18 +395,29 @@ def register_routes(app):
     @limiter.limit("10 per minute")
     def login():
         if current_user.is_authenticated:
-            return redirect(url_for("profile"))
+            return redirect(safe_next(request.args.get("next"), url_for("profile")))
         form = LoginForm()
+        next_url = request.form.get("next") or request.args.get("next") or ""
         if form.validate_on_submit():
             email = form.email.data.strip().lower()
             user = User.query.filter(func.lower(User.email) == email).first()
             if not user or not user.check_password(form.password.data):
                 flash("Invalid email or password.", "error")
-                return render_template("login.html", active="login", form=form)
+                return render_template(
+                    "login.html",
+                    active="login",
+                    form=form,
+                    next_url=next_url,
+                )
             login_user(user, remember=True)
             flash("You are now logged in.", "success")
-            return redirect(safe_next(request.args.get("next")))
-        return render_template("login.html", active="login", form=form)
+            return redirect(safe_next(next_url, url_for("profile")))
+        return render_template(
+            "login.html",
+            active="login",
+            form=form,
+            next_url=next_url,
+        )
 
     @app.route("/logout", methods=["POST"])
     @login_required
@@ -421,6 +494,22 @@ def register_routes(app):
         is_owner = current_user.is_authenticated and current_user.id == member.id
         if not person.is_visible and not is_owner:
             abort(404)
+        interest_status = None
+        incoming_pending = False
+        can_see_contact = is_owner
+        if current_user.is_authenticated and not is_owner:
+            outgoing = Interest.query.filter_by(
+                sender_id=current_user.id, receiver_id=member.id
+            ).first()
+            incoming = Interest.query.filter_by(
+                sender_id=member.id, receiver_id=current_user.id
+            ).first()
+            if outgoing:
+                interest_status = outgoing.status
+            elif incoming:
+                interest_status = incoming.status
+                incoming_pending = incoming.status == "pending"
+            can_see_contact = interest_status == "accepted"
         return render_template(
             "member.html",
             active="community",
@@ -428,6 +517,9 @@ def register_routes(app):
             member=member,
             is_owner=is_owner,
             is_fav=current_user.is_authenticated and member.id in favourite_ids(),
+            can_see_contact=can_see_contact,
+            interest_status=interest_status,
+            incoming_pending=incoming_pending,
         )
 
     @app.route("/favourite/<int:user_id>", methods=["POST"])
@@ -435,7 +527,7 @@ def register_routes(app):
     def toggle_favourite(user_id):
         if user_id == current_user.id:
             flash("You cannot shortlist your own profile.", "error")
-            return redirect(request.referrer or url_for("community"))
+            return redirect(safe_next(request.referrer, url_for("community")))
         target = db.session.get(User, user_id)
         if not target or not target.profile or not target.profile.is_visible:
             abort(404)
@@ -452,27 +544,36 @@ def register_routes(app):
             except IntegrityError:
                 db.session.rollback()
                 flash("This profile is already in your shortlist.", "error")
-        return redirect(request.referrer or url_for("community"))
+        return redirect(safe_next(request.referrer, url_for("community")))
 
     @app.route("/interest/<int:user_id>", methods=["POST"])
     @login_required
     def send_interest(user_id):
+        fallback = url_for("member_detail", user_id=user_id)
         if user_id == current_user.id:
             flash("You cannot send interest to yourself.", "error")
-            return redirect(request.referrer or url_for("profile"))
+            return redirect(safe_next(request.referrer, url_for("profile")))
         target = db.session.get(User, user_id)
         if not target or not target.profile or not target.profile.is_visible:
             abort(404)
         existing = Interest.query.filter_by(sender_id=current_user.id, receiver_id=user_id).first()
         if existing:
-            flash("You already sent interest to this profile.", "error")
-            return redirect(request.referrer or url_for("member_detail", user_id=user_id))
+            if existing.status == "declined":
+                existing.status = "pending"
+                db.session.commit()
+                flash("Interest sent. The member can review it from their Connections page.", "success")
+            else:
+                flash("You already sent interest to this profile.", "error")
+            return redirect(safe_next(request.referrer, fallback))
         incoming = Interest.query.filter_by(sender_id=user_id, receiver_id=current_user.id).first()
+        if incoming and incoming.status == "accepted":
+            flash("You are already connected with this member.", "success")
+            return redirect(safe_next(request.referrer, fallback))
         if incoming and incoming.status == "pending":
             incoming.status = "accepted"
             db.session.commit()
             flash("This member had already sent you interest. You are now connected.", "success")
-            return redirect(request.referrer or url_for("member_detail", user_id=user_id))
+            return redirect(safe_next(request.referrer, fallback))
         db.session.add(Interest(sender_id=current_user.id, receiver_id=user_id, status="pending"))
         try:
             db.session.commit()
@@ -480,7 +581,7 @@ def register_routes(app):
         except IntegrityError:
             db.session.rollback()
             flash("You already sent interest to this profile.", "error")
-        return redirect(request.referrer or url_for("member_detail", user_id=user_id))
+        return redirect(safe_next(request.referrer, fallback))
 
     @app.route("/connections")
     @login_required
@@ -495,6 +596,8 @@ def register_routes(app):
             .order_by(Interest.created_at.desc())
             .all()
         )
+        received = [item for item in received if item.sender and item.sender.profile]
+        sent = [item for item in sent if item.receiver and item.receiver.profile]
         return render_template(
             "connections.html",
             active="connections",
@@ -512,6 +615,9 @@ def register_routes(app):
         if action not in ("accept", "decline"):
             flash("Invalid action.", "error")
             return redirect(url_for("connections"))
+        if item.status != "pending":
+            flash("This interest has already been reviewed.", "error")
+            return redirect(url_for("connections"))
         item.status = "accepted" if action == "accept" else "declined"
         db.session.commit()
         flash("Interest {}".format(item.status), "success")
@@ -528,7 +634,7 @@ def register_routes(app):
             flash("Your email was saved for newsletters. No email was sent.", "success")
         else:
             flash("Please enter a valid email address.", "error")
-        return redirect(request.referrer or url_for("home"))
+        return redirect(safe_next(request.referrer, url_for("home")))
 
     @app.route("/robots.txt")
     def robots_txt():
